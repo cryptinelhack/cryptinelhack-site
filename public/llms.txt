@@ -1,0 +1,32 @@
+# Cryptinelhack
+
+> Cryptinelhack est un logiciel d'automatisation et de productivité pour Windows 10 et 11. Il réunit un studio de workflows visuel sans code, 75 modèles prêts à l'emploi, 18 types de déclencheurs, le Drop Cube pour partager des fichiers en local par QR Code, une télécommande Android avec Stream Deck tactile, des workspaces multi-écrans et un monitoring système 100 % local.
+
+- Site officiel : https://cryptinelhack-ing.web.app/
+- Téléchargements officiels (Windows .exe, .msi, Android .apk) : https://github.com/cryptinelhack/CRYPTINELHACK/releases/latest
+- Contact et clés d'activation : cryptinelhack@gmail.com
+- Plateformes : Windows 10, Windows 11 (64 bits) ; application compagnon Android 8.0 et plus
+
+## Fonctionnalités
+
+- Studio graphique de workflows : nœuds déclencheurs et actions reliés sur un canvas, branches conditionnelles OUI / NON, bouton Tester, écoute en arrière-plan.
+- 75 modèles : surveillance de sites et d'API avec alertes Discord / Telegram / Slack, traitement d'images et de PDF, Git, sauvegardes, rapports par e-mail. Import et export en JSON.
+- 18 déclencheurs : intervalle, horaire fixe, Cron, date unique, surveillance de dossier, raccourci clavier global, inactivité, presse-papiers, ouverture d'application, seuil CPU / RAM / disque, batterie, plein écran, clé USB, réseau.
+- Drop Cube : plateau flottant ancrable sur les 4 bords, ouverture par secousse de la souris, partage local par QR Code sans cloud ni ZIP, mode boîte de dépôt pour collecter des fichiers sans accès au disque, actions rapides (ZIP, compression et conversion d'images, OCR).
+- Télécommande Android : connexion par QR Code en Wi-Fi local ou en Bluetooth (RFCOMM), transfert de fichiers PC vers téléphone et inversement, presse-papiers synchronisé, trackpad et clavier, Stream Deck tactile.
+- Lanceur d'applications : détection des logiciels installés avec leurs icônes, favoris synchronisés sur le téléphone.
+- Workspaces : capture et restauration en un clic de la position et de la taille des fenêtres sur plusieurs écrans, volume audio associé, relance des applications fermées.
+- Monitoring : CPU, RAM, GPU, réseau, disques, processus, suivi du temps d'écran stocké uniquement en local.
+- Analyse disque : répartition par type de fichiers, dossiers et fichiers les plus lourds, doublons détectés par empreinte SHA-256.
+- Sécurité : mot de passe du logiciel avec verrouillage automatique, mot de passe distinct pour l'accès mobile, sauvegarde du profil en JSON.
+
+## Activation
+
+Chaque installation nécessite une clé individuelle (format CRYP-XXXX-XXXX-XXXX) liée à l'empreinte matérielle du PC. Demande via le formulaire du site officiel ou depuis le logiciel ; la clé est envoyée par e-mail.
+
+## Pages
+
+- [Accueil et présentation complète](https://cryptinelhack-ing.web.app/)
+- [Téléchargement](https://cryptinelhack-ing.web.app/#telechargement)
+- [Questions fréquentes](https://cryptinelhack-ing.web.app/#faq)
+- [Demande de clé](https://cryptinelhack-ing.web.app/#licence)

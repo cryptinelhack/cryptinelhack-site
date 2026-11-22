@@ -1,9 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://cryptinelhack-ing.web.app/</loc>
     <lastmod>2026-11-22</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
+    <image:image><image:loc>https://cryptinelhack-ing.web.app/og-image.jpg</image:loc></image:image>
+    <image:image><image:loc>https://cryptinelhack-ing.web.app/screenshots/cryptinelhack-workflow-studio.webp</image:loc></image:image>
+    <image:image><image:loc>https://cryptinelhack-ing.web.app/screenshots/cryptinelhack-templates.webp</image:loc></image:image>
+    <image:image><image:loc>https://cryptinelhack-ing.web.app/screenshots/cryptinelhack-triggers.webp</image:loc></image:image>
+    <image:image><image:loc>https://cryptinelhack-ing.web.app/screenshots/cryptinelhack-dropcube.webp</image:loc></image:image>
+    <image:image><image:loc>https://cryptinelhack-ing.web.app/screenshots/cryptinelhack-mobile-remote.webp</image:loc></image:image>
+    <image:image><image:loc>https://cryptinelhack-ing.web.app/screenshots/cryptinelhack-app-launcher.webp</image:loc></image:image>
+    <image:image><image:loc>https://cryptinelhack-ing.web.app/screenshots/cryptinelhack-workspaces.webp</image:loc></image:image>
+    <image:image><image:loc>https://cryptinelhack-ing.web.app/screenshots/cryptinelhack-system-monitoring.webp</image:loc></image:image>
+    <image:image><image:loc>https://cryptinelhack-ing.web.app/screenshots/cryptinelhack-disk-radar.webp</image:loc></image:image>
+    <image:image><image:loc>https://cryptinelhack-ing.web.app/screenshots/cryptinelhack-security-settings.webp</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://cryptinelhack-ing.web.app/llms.txt</loc>
+    <lastmod>2026-11-22</lastmod>
   </url>
 </urlset>
