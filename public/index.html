@@ -3,868 +3,1915 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cryptinelhack — Explorateur Système, Automatisation &amp; Télémétrie Windows</title>
+  <title>Cryptinelhack — Conçu en Rust. Forgé pour Windows.</title>
+  <meta name="description" content="Explorateur double-volet natif, studio d'automatisation visuel, télémétrie WASAPI temps réel et compagnon mobile Android. Conçu en Rust pour Windows 10 et 11." />
   <link rel="icon" type="image/svg+xml" href="/cryptinelhack-logo.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #090a0c;
-      --surface: #0e1014;
-      --surface-2: #13161c;
-      --surface-3: #181c24;
-      --line: #1e222b;
-      --line-light: #2a2f3b;
-      --text: #eceff4;
-      --text-dim: #949ba8;
-      --text-muted: #5e6573;
-      --brand: #d9383e;
-      --brand-hover: #e6484e;
-      --green: #2ea043;
-      --amber: #d29922;
-      --mono: "JetBrains Mono", Consolas, monospace;
-      --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --ink: #0c0c0b;
+      --ink-2: #151514;
+      --ink-3: #1f1f1d;
+      --ink-4: #282825;
+      --bone: #eceae4;
+      --bone-2: #c9c6be;
+      --bone-3: #e2dfd8;
+      --mute: #8c8a84;
+      --dim: #3b3a36;
+      --line: rgba(236, 234, 228, 0.12);
+      --line-2: rgba(236, 234, 228, 0.22);
+      --red: #ff4f2b;
+      --red-soft: rgba(255, 79, 43, 0.14);
+      --ok: #3ccf7d;
+      --ok-soft: rgba(60, 207, 125, 0.14);
+      --sans: "Archivo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      --wrap: 1280px;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--ink);
+    }
+
     body {
-      background-color: var(--bg);
-      color: var(--text);
+      background-color: var(--ink);
+      color: var(--bone);
       font-family: var(--sans);
-      font-size: 14px;
-      line-height: 1.5;
+      font-size: 15px;
+      line-height: 1.6;
+      letter-spacing: -0.01em;
       -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
     }
-    a { color: inherit; text-decoration: none; }
 
-    .wrap {
-      max-width: 1200px;
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    code, .mono {
+      font-family: var(--mono);
+      font-size: 0.9em;
+    }
+
+    /* Container Shell */
+    .shell {
+      max-width: var(--wrap);
       margin: 0 auto;
       border-left: 1px solid var(--line);
       border-right: 1px solid var(--line);
+      position: relative;
     }
 
-    /* Header Bar */
-    .topbar {
+    /* Topbar Navigation (Denny Pratama minimal style) */
+    .nav-bar {
       position: sticky;
       top: 0;
-      z-index: 50;
-      background: rgba(9, 10, 12, 0.92);
-      backdrop-filter: blur(8px);
+      z-index: 100;
+      background: rgba(12, 12, 11, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--line);
     }
-    .topbar-inner {
-      max-width: 1200px;
+
+    .nav-inner {
+      max-width: var(--wrap);
       margin: 0 auto;
-      height: 58px;
-      padding: 0 24px;
+      height: 64px;
+      padding: 0 32px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       border-left: 1px solid var(--line);
       border-right: 1px solid var(--line);
     }
-    .brand-id {
+
+    .nav-brand {
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-weight: 600;
-      font-size: 14px;
-      letter-spacing: -0.01em;
-    }
-    .brand-id img { width: 26px; height: 26px; border-radius: 6px; }
-    .brand-ver {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--text-dim);
-      padding: 2px 6px;
-      background: var(--surface-2);
-      border: 1px solid var(--line);
-      border-radius: 4px;
-    }
-    .nav {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-      font-size: 13px;
-      color: var(--text-dim);
-    }
-    .nav a:hover { color: var(--text); }
-    .nav-cta {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
 
-    /* Buttons */
+    .nav-brand img {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: block;
+    }
+
+    .nav-brand-title {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--bone);
+      text-transform: uppercase;
+    }
+
+    .nav-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--mute);
+      padding: 3px 8px;
+      background: var(--ink-2);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+    }
+
+    .nav-pill .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--ok);
+      box-shadow: 0 0 8px var(--ok);
+    }
+
+    .nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      font-size: 13.5px;
+      color: var(--bone-2);
+    }
+
+    .nav-menu a {
+      transition: color 0.15s ease;
+      position: relative;
+    }
+
+    .nav-menu a:hover {
+      color: var(--bone);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Buttons (Denny Pratama high-contrast aesthetic) */
     .btn {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
-      height: 36px;
-      padding: 0 14px;
-      border-radius: 6px;
+      font-family: var(--sans);
       font-size: 13px;
-      font-weight: 500;
-      border: 1px solid transparent;
-      cursor: pointer;
-      transition: background 0.12s ease, border-color 0.12s ease;
-    }
-    .btn-primary {
-      background: var(--brand);
-      color: #fff;
-      border-color: rgba(255,255,255,0.1);
-    }
-    .btn-primary:hover { background: var(--brand-hover); }
-    .btn-outline {
-      background: var(--surface-2);
-      color: var(--text);
-      border-color: var(--line-light);
-    }
-    .btn-outline:hover { background: var(--surface-3); }
-    .btn-lg {
-      height: 42px;
-      padding: 0 18px;
-      font-size: 13.5px;
       font-weight: 600;
+      height: 38px;
+      padding: 0 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.16s ease;
+      white-space: nowrap;
+      border: 1px solid transparent;
     }
 
-    /* Hero Split Layout */
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 1.05fr 1.25fr;
-      border-bottom: 1px solid var(--line);
+    .btn-solid {
+      background: var(--bone);
+      color: var(--ink);
+      border-color: var(--bone);
     }
-    .hero-copy {
-      padding: 56px 40px;
+
+    .btn-solid:hover {
+      background: #ffffff;
+      color: #000000;
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: var(--ink-2);
+      color: var(--bone);
+      border-color: var(--line-2);
+    }
+
+    .btn-outline:hover {
+      background: var(--ink-3);
+      border-color: var(--bone-2);
+      color: #fff;
+    }
+
+    .btn-accent {
+      background: var(--red);
+      color: #ffffff;
+      border-color: var(--red);
+    }
+
+    .btn-accent:hover {
+      background: #ff6545;
+      transform: translateY(-1px);
+    }
+
+    .btn-lg {
+      height: 46px;
+      padding: 0 22px;
+      font-size: 14px;
+    }
+
+    /* Editorial Index Bar */
+    .index-bar {
+      padding: 14px 32px;
+      border-bottom: 1px solid var(--line);
+      background: var(--ink-2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--mute);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .index-bar span.accent {
+      color: var(--red);
+    }
+
+    /* Hero Section */
+    .hero-split {
+      display: grid;
+      grid-template-columns: 1.1fr 1.15fr;
+      border-bottom: 1px solid var(--line);
+      background: var(--ink);
+    }
+
+    .hero-content {
+      padding: 64px 44px;
       border-right: 1px solid var(--line);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
-    .kicker {
+
+    .hero-badge-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .tag-editorial {
       font-family: var(--mono);
       font-size: 11px;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-dim);
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .kicker-dot {
-      width: 6px;
-      height: 6px;
-      background: var(--brand);
-      display: inline-block;
-    }
-    .hero-copy h1 {
-      font-size: 34px;
-      line-height: 1.16;
-      font-weight: 700;
-      letter-spacing: -0.025em;
-      margin-bottom: 16px;
-      color: #fff;
-    }
-    .hero-copy p {
-      font-size: 14.5px;
-      color: var(--text-dim);
-      line-height: 1.65;
-      margin-bottom: 28px;
-    }
-    .hero-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 32px;
-    }
-    .specs-strip {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      border-top: 1px solid var(--line);
-      padding-top: 18px;
-      gap: 12px;
-    }
-    .spec-item span {
-      display: block;
-      font-family: var(--mono);
-      font-size: 10.5px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-    }
-    .spec-item strong {
-      font-family: var(--mono);
-      font-size: 12.5px;
-      color: var(--text);
-      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--bone);
+      background: var(--ink-2);
+      border: 1px solid var(--line-2);
+      padding: 4px 10px;
+      border-radius: 3px;
     }
 
-    /* Interactive Software Mockup Window in Hero */
-    .hero-preview {
-      background: var(--surface);
-      padding: 28px;
+    .hero-title {
+      font-size: 46px;
+      line-height: 1.05;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--bone);
+      margin-bottom: 24px;
+    }
+
+    .hero-title span.slash-accent {
+      color: var(--red);
+    }
+
+    .hero-lead {
+      font-size: 16.5px;
+      line-height: 1.65;
+      color: var(--bone-2);
+      margin-bottom: 36px;
+      font-weight: 400;
+    }
+
+    .hero-ctas {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 48px;
+    }
+
+    .hero-specs-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      border-top: 1px solid var(--line);
+      padding-top: 24px;
+    }
+
+    .spec-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .spec-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--mute);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .spec-value {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--bone);
+    }
+
+    /* Hero Preview / Window Blueprint */
+    .hero-stage {
+      background: radial-gradient(circle at 50% 40%, #171715 0%, #0c0c0b 85%);
+      padding: 44px;
       display: flex;
       align-items: center;
       justify-content: center;
+      position: relative;
     }
-    .app-window {
+
+    .blueprint-card {
       width: 100%;
-      background: #0b0d10;
-      border: 1px solid var(--line-light);
-      border-radius: 8px;
+      background: var(--ink-2);
+      border: 1px solid var(--line-2);
+      border-radius: 6px;
+      box-shadow: 0 32px 64px -16px rgba(0, 0, 0, 0.8);
       overflow: hidden;
-      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.65);
-      font-size: 12px;
     }
-    .win-titlebar {
-      height: 34px;
-      background: #11141a;
+
+    .bp-bar {
+      height: 38px;
+      background: var(--ink-3);
       border-bottom: 1px solid var(--line);
-      padding: 0 12px;
+      padding: 0 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       font-family: var(--mono);
       font-size: 11px;
-      color: var(--text-dim);
-    }
-    .win-dots { display: flex; gap: 6px; }
-    .win-dots i { width: 8px; height: 8px; border-radius: 50%; background: #2a2f3a; display: inline-block; }
-    .win-address {
-      background: #090a0d;
-      border: 1px solid var(--line);
-      padding: 2px 10px;
-      border-radius: 4px;
-      color: var(--text);
-    }
-    .win-body {
-      display: grid;
-      grid-template-columns: 165px 1fr;
-      min-height: 310px;
-    }
-    .win-sidebar {
-      background: #0d0f14;
-      border-right: 1px solid var(--line);
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .win-sec-label {
-      font-family: var(--mono);
-      font-size: 9.5px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      letter-spacing: 0.05em;
-    }
-    .drive-box {
-      background: #13161d;
-      border: 1px solid var(--line);
-      border-radius: 5px;
-      padding: 7px 8px;
-      margin-top: 4px;
-    }
-    .drive-row {
-      display: flex;
-      justify-content: space-between;
-      font-family: var(--mono);
-      font-size: 10.5px;
-      margin-bottom: 5px;
-    }
-    .meter { height: 4px; background: #222630; border-radius: 2px; overflow: hidden; }
-    .meter-fill { height: 100%; background: var(--brand); }
-    .win-main {
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .win-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 11.5px;
-    }
-    .win-table th {
-      text-align: left;
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--text-muted);
-      font-weight: 500;
-      padding: 5px 6px;
-      border-bottom: 1px solid var(--line);
-    }
-    .win-table td {
-      padding: 7px 6px;
-      border-bottom: 1px solid #151820;
-      color: var(--text);
-    }
-    .win-table tr.active td {
-      background: rgba(217, 56, 62, 0.12);
-    }
-    .mono-cell { font-family: var(--mono); font-size: 11px; color: var(--text-dim); text-align: right; }
-    .win-footer {
-      margin-top: 10px;
-      padding-top: 8px;
-      border-top: 1px solid var(--line);
-      display: flex;
-      justify-content: space-between;
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--text-muted);
+      color: var(--bone-2);
     }
 
-    /* Section Header Bar */
-    .sec-bar {
-      padding: 14px 24px;
-      background: var(--surface);
-      border-bottom: 1px solid var(--line);
+    .bp-controls {
+      display: flex;
+      gap: 6px;
+    }
+
+    .bp-controls span {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--dim);
+    }
+
+    .bp-tabs {
+      display: flex;
+      gap: 1px;
+      background: var(--ink);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 2px;
+    }
+
+    .bp-tab {
+      padding: 3px 10px;
+      font-size: 10.5px;
+      font-family: var(--mono);
+      color: var(--mute);
+      border-radius: 3px;
+    }
+
+    .bp-tab.active {
+      background: var(--ink-3);
+      color: var(--bone);
+    }
+
+    .bp-dual-canvas {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 290px;
       font-family: var(--mono);
       font-size: 11px;
-      color: var(--text-dim);
+    }
+
+    .bp-pane {
+      padding: 14px;
+      border-right: 1px solid var(--line);
+      background: var(--ink-2);
+    }
+
+    .bp-pane:last-child {
+      border-right: none;
+      background: #111110;
+    }
+
+    .bp-pane-header {
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      color: var(--mute);
+      font-size: 10px;
+    }
+
+    .bp-file-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 6px;
+      border-radius: 3px;
+      color: var(--bone-2);
+      margin-bottom: 2px;
+    }
+
+    .bp-file-row.selected {
+      background: var(--ink-3);
+      color: var(--bone);
+      border-left: 2px solid var(--red);
+    }
+
+    .bp-file-row .f-size {
+      color: var(--mute);
+    }
+
+    .bp-footer {
+      background: var(--ink);
+      border-top: 1px solid var(--line);
+      padding: 8px 14px;
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--mute);
+    }
+
+    /* Manifesto / Statement Strip */
+    .manifesto-strip {
+      padding: 56px 44px;
+      border-bottom: 1px solid var(--line);
+      background: var(--ink-2);
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 40px;
+    }
+
+    .manifesto-kicker {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--red);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      display: flex;
-      justify-content: space-between;
     }
 
-    /* Architectural Modules Grid (No generic AI cards) */
-    .modules-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
+    .manifesto-body {
+      font-size: 20px;
+      line-height: 1.5;
+      color: var(--bone);
+      font-weight: 500;
+      letter-spacing: -0.02em;
+    }
+
+    .manifesto-body span.dimmed {
+      color: var(--mute);
+    }
+
+    /* Deep Dive Feature Showcase Section */
+    .feature-case {
       border-bottom: 1px solid var(--line);
+      background: var(--ink);
     }
-    .module-pane {
-      padding: 36px 32px;
+
+    .feature-case-header {
+      padding: 24px 44px;
+      background: var(--ink-2);
       border-bottom: 1px solid var(--line);
-    }
-    .module-pane:nth-child(odd) {
-      border-right: 1px solid var(--line);
-    }
-    .module-pane:nth-last-child(-n+2) {
-      border-bottom: none;
-    }
-    .mod-index {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       font-family: var(--mono);
-      font-size: 11px;
-      color: var(--brand);
-      margin-bottom: 8px;
-      display: block;
+      font-size: 12px;
+      color: var(--mute);
     }
-    .module-pane h3 {
-      font-size: 18px;
+
+    .feature-case-header .case-id {
+      color: var(--bone);
       font-weight: 600;
-      letter-spacing: -0.015em;
-      margin-bottom: 10px;
-      color: #fff;
-    }
-    .module-pane p {
-      font-size: 13.5px;
-      color: var(--text-dim);
-      line-height: 1.6;
-      margin-bottom: 18px;
-    }
-    .spec-list {
-      list-style: none;
-      border-top: 1px solid var(--line);
-    }
-    .spec-list li {
-      padding: 8px 0;
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      justify-content: space-between;
-      font-size: 12.5px;
-    }
-    .spec-list li span:first-child { color: var(--text-dim); }
-    .spec-list li span:last-child { font-family: var(--mono); font-size: 11.5px; color: var(--text); }
-
-    /* Distribution & Download Matrix Table */
-    .dist-section {
-      padding: 44px 32px;
-      border-bottom: 1px solid var(--line);
-    }
-    .dist-header {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    .dist-header h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
-    .dist-header p { font-size: 13.5px; color: var(--text-dim); margin-top: 4px; }
-    .dist-table {
-      width: 100%;
-      border-collapse: collapse;
-      border: 1px solid var(--line);
-      background: var(--surface);
-    }
-    .dist-table th {
-      text-align: left;
-      padding: 12px 16px;
-      background: var(--surface-2);
-      border-bottom: 1px solid var(--line);
-      font-family: var(--mono);
-      font-size: 11px;
-      text-transform: uppercase;
-      color: var(--text-dim);
-    }
-    .dist-table td {
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--line);
-      font-size: 13px;
-    }
-    .dist-table tr:last-child td { border-bottom: none; }
-    .arch-badge {
-      font-family: var(--mono);
-      font-size: 11px;
-      padding: 2px 7px;
-      background: var(--surface-3);
-      border: 1px solid var(--line-light);
-      border-radius: 4px;
-      color: var(--text-dim);
+      letter-spacing: 0.04em;
     }
 
-    /* License Request Split Section */
-    .license-grid {
+    .feature-case-body {
       display: grid;
-      grid-template-columns: 1fr 1.1fr;
-      border-bottom: 1px solid var(--line);
+      grid-template-columns: 1.15fr 1fr;
     }
-    .license-info {
-      padding: 44px 36px;
+
+    .feature-case-body.reverse {
+      grid-template-columns: 1fr 1.15fr;
+    }
+
+    .feature-narrative {
+      padding: 56px 44px;
       border-right: 1px solid var(--line);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
-    .license-info h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 12px; }
-    .license-info p { font-size: 13.5px; color: var(--text-dim); line-height: 1.65; margin-bottom: 20px; }
-    .protocol-steps {
-      border: 1px solid var(--line);
-      background: var(--surface);
-      border-radius: 6px;
-      padding: 16px;
-      space-y: 10px;
+
+    .feature-case-body.reverse .feature-narrative {
+      border-right: none;
+      border-left: 1px solid var(--line);
     }
-    .protocol-step {
+
+    .feature-title {
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      color: var(--bone);
+      margin-bottom: 18px;
+    }
+
+    .feature-desc {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--bone-2);
+      margin-bottom: 28px;
+    }
+
+    .feature-tech-list {
+      list-style: none;
       display: flex;
-      gap: 12px;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--line);
-      font-size: 12.5px;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 32px;
     }
-    .protocol-step:last-child { border-bottom: none; }
-    .step-num { font-family: var(--mono); color: var(--brand); font-weight: 600; }
-    .contact-box {
-      margin-top: 24px;
-      padding: 14px 16px;
-      background: var(--surface);
+
+    .feature-tech-item {
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 12px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--bone-2);
+    }
+
+    .feature-tech-item .item-num {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--red);
+      font-weight: 600;
+    }
+
+    .feature-tech-item strong {
+      color: var(--bone);
+      font-weight: 600;
+    }
+
+    .feature-meta-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+    }
+
+    .chip {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 4px 10px;
+      background: var(--ink-2);
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      color: var(--mute);
+    }
+
+    .chip strong {
+      color: var(--bone);
+    }
+
+    /* Feature Technical Blueprint Stage */
+    .feature-visual {
+      background: var(--ink-2);
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .terminal-card {
+      background: var(--ink);
       border: 1px solid var(--line);
       border-radius: 6px;
+      overflow: hidden;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .tc-head {
+      background: var(--ink-3);
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--line);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 12.5px;
+      font-size: 10.5px;
+      color: var(--mute);
     }
-    .contact-box code { font-family: var(--mono); color: #fff; font-weight: 600; }
+
+    .tc-body {
+      padding: 16px;
+      line-height: 1.6;
+      color: var(--bone-2);
+    }
+
+    .tc-prompt {
+      color: var(--red);
+    }
+
+    .tc-keyword {
+      color: var(--ok);
+    }
+
+    .tc-muted {
+      color: var(--mute);
+    }
+
+    .tc-white {
+      color: var(--bone);
+      font-weight: 600;
+    }
+
+    /* Comparison Table Section */
+    .comp-section {
+      border-bottom: 1px solid var(--line);
+      background: var(--ink);
+    }
+
+    .comp-header {
+      padding: 44px 44px 24px 44px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .comp-header h2 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+    }
+
+    .comp-header p {
+      color: var(--mute);
+      font-size: 14.5px;
+    }
+
+    .comp-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      text-align: left;
+    }
+
+    .comp-table th, .comp-table td {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .comp-table th {
+      background: var(--ink-2);
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--mute);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .comp-table td.brand-col {
+      font-weight: 600;
+      color: var(--bone);
+      background: rgba(255, 79, 43, 0.03);
+      border-left: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+    }
+
+    .comp-table th.brand-col {
+      color: var(--red);
+      border-left: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+    }
+
+    .comp-check {
+      color: var(--ok);
+      font-family: var(--mono);
+      font-weight: 600;
+    }
+
+    .comp-cross {
+      color: var(--mute);
+      font-family: var(--mono);
+    }
+
+    /* Download & Releases Section */
+    .dl-section {
+      border-bottom: 1px solid var(--line);
+      background: var(--ink-2);
+    }
+
+    .dl-header-bar {
+      padding: 24px 44px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--mute);
+    }
+
+    .dl-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .dl-card {
+      padding: 36px 32px;
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: var(--ink);
+    }
+
+    .dl-card:last-child {
+      border-right: none;
+    }
+
+    .dl-card.highlight {
+      background: #111110;
+      box-shadow: inset 0 2px 0 var(--red);
+    }
+
+    .dl-card-tag {
+      font-family: var(--mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      color: var(--mute);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .dl-card h3 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+      color: var(--bone);
+    }
+
+    .dl-card p {
+      font-size: 13.5px;
+      color: var(--bone-2);
+      line-height: 1.55;
+      margin-bottom: 24px;
+    }
+
+    .dl-card-specs {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--mute);
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .dl-card-specs span strong {
+      color: var(--bone);
+    }
+
+    /* License & Access Key Form Section */
+    .license-section {
+      border-bottom: 1px solid var(--line);
+      background: var(--ink);
+    }
+
+    .license-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .license-info-pane {
+      padding: 56px 44px;
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .license-info-pane h2 {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 18px;
+    }
+
+    .license-info-pane p {
+      font-size: 15px;
+      color: var(--bone-2);
+      line-height: 1.65;
+      margin-bottom: 32px;
+    }
+
+    .steps-editorial {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-bottom: 36px;
+    }
+
+    .step-editorial-item {
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .step-index {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--red);
+      background: var(--ink-2);
+      border: 1px solid var(--line);
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+    }
+
+    .step-editorial-item .step-text h4 {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--bone);
+      margin-bottom: 3px;
+    }
+
+    .step-editorial-item .step-text p {
+      font-size: 13px;
+      color: var(--mute);
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .contact-card-minimal {
+      background: var(--ink-2);
+      border: 1px solid var(--line);
+      padding: 18px 22px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .contact-card-minimal a {
+      color: var(--red);
+      font-weight: 600;
+    }
 
     .license-form-pane {
-      padding: 44px 36px;
-      background: var(--surface);
+      padding: 56px 44px;
+      background: var(--ink-2);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
-    .field { margin-bottom: 16px; }
-    .field label {
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
       display: block;
       font-family: var(--mono);
       font-size: 11px;
       text-transform: uppercase;
-      color: var(--text-dim);
-      margin-bottom: 6px;
-    }
-    .field input {
-      width: 100%;
-      height: 40px;
-      padding: 0 12px;
-      background: var(--bg);
-      border: 1px solid var(--line-light);
-      border-radius: 6px;
-      color: var(--text);
-      font-size: 13px;
-      font-family: var(--sans);
-      outline: none;
-    }
-    .field input:focus { border-color: var(--brand); }
-    .status-msg {
-      margin-top: 14px;
-      padding: 12px;
-      border-radius: 6px;
-      font-size: 12.5px;
-      display: none;
-    }
-    .status-msg.ok {
-      background: rgba(46, 160, 67, 0.12);
-      border: 1px solid rgba(46, 160, 67, 0.4);
-      color: #7ee787;
-    }
-    .status-msg.err {
-      background: rgba(217, 56, 62, 0.12);
-      border: 1px solid rgba(217, 56, 62, 0.4);
-      color: #ffa198;
+      letter-spacing: 0.05em;
+      color: var(--bone-2);
+      margin-bottom: 8px;
     }
 
-    /* Footer */
+    .form-group input {
+      width: 100%;
+      height: 44px;
+      background: var(--ink);
+      border: 1px solid var(--line-2);
+      border-radius: 4px;
+      padding: 0 14px;
+      color: var(--bone);
+      font-family: var(--sans);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .form-group input:focus {
+      border-color: var(--bone);
+    }
+
+    .form-group input::placeholder {
+      color: var(--mute);
+    }
+
+    .status-toast {
+      display: none;
+      margin-top: 18px;
+      padding: 14px 18px;
+      border-radius: 4px;
+      font-size: 13.5px;
+      font-family: var(--mono);
+      line-height: 1.5;
+    }
+
+    .status-toast.ok {
+      background: var(--ok-soft);
+      border: 1px solid var(--ok);
+      color: #98ffc2;
+    }
+
+    .status-toast.err {
+      background: var(--red-soft);
+      border: 1px solid var(--red);
+      color: #ff9d8c;
+    }
+
+    /* Footer (Denny Pratama style) */
     .site-footer {
-      padding: 24px 32px;
+      padding: 44px 32px;
+      background: var(--ink);
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .footer-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-      font-size: 12px;
-      color: var(--text-muted);
-      font-family: var(--mono);
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 24px;
     }
 
-    @media (max-width: 920px) {
-      .hero-grid, .modules-grid, .license-grid { grid-template-columns: 1fr; }
-      .hero-copy, .module-pane:nth-child(odd), .license-info { border-right: none; }
-      .module-pane { border-bottom: 1px solid var(--line) !important; }
-      .nav { display: none; }
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      font-size: 13px;
+      color: var(--mute);
+    }
+
+    .footer-links a:hover {
+      color: var(--bone);
+    }
+
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--mute);
+    }
+
+    /* Responsive Queries */
+    @media (max-width: 980px) {
+      .hero-split, .feature-case-body, .feature-case-body.reverse, .license-grid, .manifesto-strip, .dl-grid {
+        grid-template-columns: 1fr;
+      }
+      .hero-content, .feature-narrative, .license-info-pane, .feature-case-body.reverse .feature-narrative {
+        border-right: none;
+        border-left: none;
+        border-bottom: 1px solid var(--line);
+      }
+      .hero-title {
+        font-size: 34px;
+      }
+      .nav-menu {
+        display: none;
+      }
+      .hero-specs-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .dl-card {
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+      }
+      .dl-card:last-child {
+        border-bottom: none;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- Sticky Topbar -->
-  <header class="topbar">
-    <div class="topbar-inner">
-      <div class="brand-id">
+
+  <!-- Minimal Sticky Navigation -->
+  <header class="nav-bar">
+    <div class="nav-inner">
+      <div class="nav-brand">
         <img src="/cryptinelhack-logo.svg" alt="Cryptinelhack" />
-        <span>CRYPTINELHACK</span>
-        <span class="brand-ver" id="navVerBadge">v0.1.0-x64</span>
+        <span class="nav-brand-title">Cryptinelhack</span>
+        <span class="nav-pill">
+          <span class="dot"></span>
+          <span id="navVerBadge">v0.1.0-x64</span>
+        </span>
       </div>
-      <nav class="nav">
+
+      <nav class="nav-menu">
         <a href="#architecture">Architecture</a>
-        <a href="#distributions">Binaires &amp; Releases</a>
-        <a href="#licence">Licence Matérielle</a>
-        <a href="mailto:cryptinelhack@gmail.com">cryptinelhack@gmail.com</a>
+        <a href="#fonctionnalites">Fonctionnalités</a>
+        <a href="#comparatif">Benchmark</a>
+        <a href="#telechargement">Téléchargement</a>
+        <a href="#licence">Licence &amp; Clés</a>
       </nav>
-      <div class="nav-cta">
-        <a href="#licence" class="btn btn-outline">Demander une clé</a>
-        <a id="navDownloadBtn" href="https://github.com/cryptinelhack/CRYPTINELHACK/releases/latest" target="_blank" rel="noopener" class="btn btn-primary">
-          Télécharger (.exe)
+
+      <div class="nav-actions">
+        <a href="https://github.com/cryptinelhack/CRYPTINELHACK" target="_blank" rel="noopener" class="btn btn-outline" title="Dépôt GitHub officiel">
+          GitHub
+        </a>
+        <a id="navDownloadBtn" href="https://github.com/cryptinelhack/CRYPTINELHACK/releases/latest" target="_blank" rel="noopener" class="btn btn-solid">
+          Télécharger .exe
         </a>
       </div>
     </div>
   </header>
 
-  <main class="wrap">
-    <!-- Hero Asymmetric Split -->
-    <section class="hero-grid">
-      <div class="hero-copy">
+  <main class="shell">
+
+    <!-- Top Editorial Ticker Bar -->
+    <div class="index-bar">
+      <span>00 // Moteur Natif Windows &amp; Compagnon Android</span>
+      <span>Build vérifié : <span class="accent">Rust 1.80+ / Win32 / Tauri v2</span></span>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero-split">
+      <div class="hero-content">
         <div>
-          <div class="kicker">
-            <span class="kicker-dot"></span>
-            <span>WINDOWS 10 / 11 (X86_64) · MOTEUR NATIF RUST &amp; WIN32</span>
+          <div class="hero-badge-row">
+            <span class="tag-editorial">Windows 10 / 11 x64</span>
+            <span class="tag-editorial">Empreinte mémoire : ~38 Mo</span>
+            <span class="tag-editorial">Zéro Bloatware</span>
           </div>
-          <h1>Poste de commande système, explorateur de disques et contrôle mobile.</h1>
-          <p>
-            Conçu pour remplacer les utilitaires dispersés sous Windows par un binaire unique compilé en Rust : explorateur de fichiers multi-onglets avec analyse d&apos;espace et détection de doublons SHA-256, serveur de transfert local par QR Code sans archive ZIP, pont mobile Wi-Fi/Bluetooth et mixeur audio WASAPI par processus.
+
+          <h1 class="hero-title">
+            Conçu en Rust.<br />
+            Forgé pour Windows.<br />
+            <span class="slash-accent">Contrôle système absolu.</span>
+          </h1>
+
+          <p class="hero-lead">
+            L'explorateur Windows traditionnel est lourd, lent et fragmenté. Cryptinelhack fusionne dans un exécutable natif ultra-rapide un gestionnaire de fichiers double-volet avec accélération GPU, une télémétrie WASAPI temps réel, un studio d'automatisation visuel et un compagnon mobile Android appairé sans cloud.
           </p>
-          <div class="hero-buttons">
-            <a id="mainDownloadExeBtn" href="https://github.com/cryptinelhack/CRYPTINELHACK/releases/latest" target="_blank" rel="noopener" class="btn btn-primary btn-lg">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              <span id="mainDownloadLabel">Télécharger l&apos;installateur Windows (.exe)</span>
+
+          <div class="hero-ctas">
+            <a id="mainDownloadExeBtn" href="https://github.com/cryptinelhack/CRYPTINELHACK/releases/latest" target="_blank" rel="noopener" class="btn btn-solid btn-lg">
+              <span id="mainDownloadLabel">Télécharger Cryptinelhack (.exe)</span>
             </a>
-            <a href="#distributions" class="btn btn-outline btn-lg">
-              Packages .MSI &amp; Android .APK
+            <a href="#licence" class="btn btn-outline btn-lg">
+              Demander une clé d&apos;accès
+            </a>
+            <a href="https://github.com/cryptinelhack/CRYPTINELHACK/releases/latest" target="_blank" rel="noopener" class="btn btn-outline btn-lg">
+              APK Android
             </a>
           </div>
         </div>
 
-        <div class="specs-strip">
-          <div class="spec-item">
-            <span>Architecture</span>
-            <strong>Rust / Tauri v2 / Win32</strong>
+        <div class="hero-specs-grid">
+          <div class="spec-block">
+            <span class="spec-label">Noyau</span>
+            <span class="spec-value">Rust 1.80 / Tokio</span>
           </div>
-          <div class="spec-item">
-            <span>Chiffrement</span>
-            <strong>AES-256-GCM &amp; DPAPI</strong>
+          <div class="spec-block">
+            <span class="spec-label">Démarrage</span>
+            <span class="spec-value">&lt; 140 ms</span>
           </div>
-          <div class="spec-item">
-            <span>Activation</span>
-            <strong>Clé liée au HWID</strong>
+          <div class="spec-block">
+            <span class="spec-label">Chiffrement</span>
+            <span class="spec-value">AES-256-GCM</span>
+          </div>
+          <div class="spec-block">
+            <span class="spec-label">Licence</span>
+            <span class="spec-value">HWID Scellé</span>
           </div>
         </div>
       </div>
 
-      <!-- Authentic Software UI Preview -->
-      <div class="hero-preview">
-        <div class="app-window">
-          <div class="win-titlebar">
-            <div class="win-dots"><i></i><i></i><i></i></div>
-            <span class="win-address">C:\Users\Workspace\Projets</span>
-            <span>Ctrl+K · Spotlight</span>
+      <!-- Blueprint Mockup Window -->
+      <div class="hero-stage">
+        <div class="blueprint-card">
+          <div class="bp-bar">
+            <div class="bp-controls">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div class="bp-tabs">
+              <span class="bp-tab active">Volet Gauche (C:\Projets)</span>
+              <span class="bp-tab">Volet Droit (D:\Archives)</span>
+            </div>
+            <span class="mono" style="color:var(--ok);">DirectWrite 60 FPS</span>
           </div>
-          <div class="win-body">
-            <div class="win-sidebar">
-              <div>
-                <div class="win-sec-label">Volumes Montés</div>
-                <div class="drive-box">
-                  <div class="drive-row"><span>C: Système NVMe</span><span>71%</span></div>
-                  <div class="meter"><div class="meter-fill" style="width:71%"></div></div>
-                </div>
-                <div class="drive-box">
-                  <div class="drive-row"><span>D: Données</span><span>38%</span></div>
-                  <div class="meter"><div class="meter-fill" style="width:38%;background:#388bfd;"></div></div>
-                </div>
+
+          <div class="bp-dual-canvas">
+            <div class="bp-pane">
+              <div class="bp-pane-header">
+                <span>C:\Projets\CryptinelEngine\</span>
+                <span>4.8 Go libre</span>
               </div>
-              <div>
-                <div class="win-sec-label">Mixeur Audio WASAPI</div>
-                <div class="drive-box">
-                  <div class="drive-row"><span>chrome.exe</span><span>80%</span></div>
-                  <div class="drive-row" style="margin:0;"><span>discord.exe</span><span>45%</span></div>
-                </div>
+              <div class="bp-file-row selected">
+                <span>src-tauri\Cargo.toml</span>
+                <span class="f-size">3.2 Ko</span>
+              </div>
+              <div class="bp-file-row">
+                <span>src\components\FileExplorer.tsx</span>
+                <span class="f-size">24.1 Ko</span>
+              </div>
+              <div class="bp-file-row">
+                <span>release\Cryptinelhack.exe</span>
+                <span class="f-size">36.8 Mo</span>
+              </div>
+              <div class="bp-file-row">
+                <span>vault\credentials.crypt</span>
+                <span class="f-size">[AES-256]</span>
               </div>
             </div>
-            <div class="win-main">
-              <table class="win-table">
-                <thead>
-                  <tr>
-                    <th>NOM</th>
-                    <th>TYPE</th>
-                    <th style="text-align:right;">TAILLE</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr class="active">
-                    <td>Builds_Production</td>
-                    <td style="font-family:var(--mono);color:var(--text-dim);">DOSSIER</td>
-                    <td class="mono-cell">4.82 Go</td>
-                  </tr>
-                  <tr>
-                    <td>archive_client_2026.crypt</td>
-                    <td style="font-family:var(--mono);color:#d29922;">AES-256</td>
-                    <td class="mono-cell">142.6 Mo</td>
-                  </tr>
-                  <tr>
-                    <td>rapport_audit_reseau.pdf</td>
-                    <td style="font-family:var(--mono);color:var(--text-dim);">PDF</td>
-                    <td class="mono-cell">18.4 Mo</td>
-                  </tr>
-                  <tr>
-                    <td>Cryptinelhack-Remote-BT.apk</td>
-                    <td style="font-family:var(--mono);color:#3fb950;">APK</td>
-                    <td class="mono-cell">4.1 Mo</td>
-                  </tr>
-                  <tr>
-                    <td>deploy_pipeline.ps1</td>
-                    <td style="font-family:var(--mono);color:var(--text-dim);">SCRIPT</td>
-                    <td class="mono-cell">12.8 Ko</td>
-                  </tr>
-                </tbody>
-              </table>
-              <div class="win-footer">
-                <span>SHA-256 : Vérifié · 0 doublon</span>
-                <span>Presse-papiers Mobile : Synchronisé</span>
+
+            <div class="bp-pane">
+              <div class="bp-pane-header">
+                <span>D:\Archives\Backups\</span>
+                <span>SHA-256 Vérifié</span>
               </div>
+              <div class="bp-file-row">
+                <span>snapshot_20261122.zip</span>
+                <span class="f-size">1.12 Go</span>
+              </div>
+              <div class="bp-file-row">
+                <span>audit_memory_trace.log</span>
+                <span class="f-size">412 Ko</span>
+              </div>
+              <div class="bp-file-row">
+                <span>android_companion.apk</span>
+                <span class="f-size">8.4 Mo</span>
+              </div>
+              <div class="bp-file-row">
+                <span>db_export_hwid.seal</span>
+                <span class="f-size">16 Ko</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bp-footer">
+            <span>F5 Copier &nbsp;·&nbsp; F6 Déplacer &nbsp;·&nbsp; F7 Nouveau &nbsp;·&nbsp; F8 Supprimer</span>
+            <span>WASAPI: 48kHz / 0ms CPU: 1.2%</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Manifesto / Core Philosophy -->
+    <div class="manifesto-strip" id="architecture">
+      <div class="manifesto-kicker">
+        01 // Philosophie &amp; Architecture
+      </div>
+      <div class="manifesto-body">
+        La plupart des logiciels utilitaires modernes empilent des couches Chromium obèses et des abonnements mensuels injustifiés.<br />
+        <span class="dimmed">
+          Cryptinelhack est compilé directement en code machine sans garbage collector. Chaque fonction est exécutée au plus près de l&apos;API Win32 pour garantir une réactivité immédiate et une totale souveraineté sur vos données.
+        </span>
+      </div>
+    </div>
+
+    <!-- Feature 01: Dual-Pane Commander & Disk Radar -->
+    <section class="feature-case" id="fonctionnalites">
+      <div class="feature-case-header">
+        <span class="case-id">01 · EXPLORATEUR DOUBLE-VOLET &amp; ANALYSEUR DISQUE</span>
+        <span>Remplacement intégral de l&apos;explorateur Windows</span>
+      </div>
+
+      <div class="feature-case-body">
+        <div class="feature-narrative">
+          <div>
+            <h2 class="feature-title">
+              Double panneau GPU, radar d&apos;espace et dédoublonnage SHA-256.
+            </h2>
+            <p class="feature-desc">
+              Finies les dizaines de fenêtres de dossiers empilées qui saturent votre écran. Cryptinelhack adopte la rigueur des gestionnaires de fichiers orthodoxes (Norton Commander, Total Commander), modernisée avec le moteur de rendu DirectWrite sous Windows 11. Naviguez, comparez et organisez vos répertoires à la vitesse de vos réflexes.
+            </p>
+
+            <ul class="feature-tech-list">
+              <li class="feature-tech-item">
+                <span class="item-num">01</span>
+                <div>
+                  <strong>Navigation Dual-Pane &amp; Multi-onglets instantanés :</strong>
+                  Deux panneaux synchronisés côte-à-côte pour transférer, dupliquer et comparer des répertoires d&apos;un simple raccourci clavier (F5 pour copier, F6 pour déplacer), avec préservation intégrale des métadonnées et dates NTFS.
+                </div>
+              </li>
+              <li class="feature-tech-item">
+                <span class="item-num">02</span>
+                <div>
+                  <strong>Analyseur d&apos;espace disque (Disk Space Radar) :</strong>
+                  Calcule l&apos;arborescence complète de vos disques en mémoire sans bloquer l&apos;interface. Identifie visuellement les dossiers les plus voraces et isole les fichiers temporaires oubliés pour récupérer des gigaoctets en quelques clics.
+                </div>
+              </li>
+              <li class="feature-tech-item">
+                <span class="item-num">03</span>
+                <div>
+                  <strong>Dédoublonnage cryptographique bit-à-bit :</strong>
+                  Ne se contente pas de comparer les noms ou tailles. Un hachage SHA-256 parallèle multi-cœurs garantit l&apos;exactitude absolue des fichiers identiques avant toute proposition de suppression.
+                </div>
+              </li>
+              <li class="feature-tech-item">
+                <span class="item-num">04</span>
+                <div>
+                  <strong>Barre d&apos;adresse Win32 dynamique :</strong>
+                  Tapez directement <code>cmd</code>, <code>powershell</code>, <code>wt</code> ou <code>code</code> dans la barre d&apos;adresse pour ouvrir immédiatement un terminal centré sur le dossier en cours d&apos;inspection.
+                </div>
+              </li>
+              <li class="feature-tech-item">
+                <span class="item-num">05</span>
+                <div>
+                  <strong>Moteur de renommage en masse &amp; ZIP natif :</strong>
+                  Renommez des milliers de documents selon des règles d&apos;expressions régulières (Regex) avec prévisualisation en direct. Compression et extraction d&apos;archives ZIP multi-threadées sans outil externe.
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div class="feature-meta-chips">
+            <span class="chip">Moteur : <strong>Win32 I/O</strong></span>
+            <span class="chip">Indexation : <strong>En mémoire vive</strong></span>
+            <span class="chip">Précision : <strong>SHA-256 Bitwise</strong></span>
+            <span class="chip">Raccourcis : <strong>F1 à F12 personnalisables</strong></span>
+          </div>
+        </div>
+
+        <div class="feature-visual">
+          <div class="terminal-card">
+            <div class="tc-head">
+              <span>EXPLORATEUR // CMD DIRECT INJECTION</span>
+              <span>WIN32 RAW HANDLE</span>
+            </div>
+            <div class="tc-body">
+              <span class="tc-muted">// Saisie dans la barre de chemin de Cryptinelhack :</span><br />
+              <span class="tc-white">&gt; C:\Program Files\Rust\ &gt; </span><span class="tc-prompt">cmd /k cargo test</span><br /><br />
+              <span class="tc-keyword">[INFO]</span> Spawning isolated conhost.exe via Win32 CreateProcessW<br />
+              <span class="tc-keyword">[INFO]</span> Hooked directory handle : 0x0000021A4B7C90<br />
+              <span class="tc-keyword">[OK]</span> SHA-256 duplicate scan: 14,290 files evaluated in 182 ms<br />
+              <span class="tc-white">[RESULT]</span> 3.42 GB recovered with zero false positives.
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Section 01: Technical Architecture -->
-    <div class="sec-bar" id="architecture">
-      <span>01 // Spécifications Techniques &amp; Modules Intégrés</span>
-      <span>6 Sous-systèmes Natifs</span>
-    </div>
-
-    <section class="modules-grid">
-      <div class="module-pane">
-        <span class="mod-index">MODULE 01 // SYSTÈME DE FICHIERS</span>
-        <h3>Explorateur Windows 11 &amp; Analyseur de Volumétrie</h3>
-        <p>
-          Navigation multi-onglets, Double Vue Commander côte-à-côte et indexation multi-disques. Identifie instantanément les répertoires et fichiers les plus lourds ainsi que les doublons exacts par hachage cryptographique SHA-256.
-        </p>
-        <ul class="spec-list">
-          <li><span>Menu contextuel &amp; raccourcis</span><span>Ctrl+C/V/X/Z, F2, Alt+Entrée</span></li>
-          <li><span>Barre de chemin interactive</span><span>Exécution directe cmd / powershell / wt</span></li>
-          <li><span>Renommage par lot</span><span>Préfixe, suffixe, remplacement, séquence</span></li>
-        </ul>
+    <!-- Feature 02: Drop Cube & Classroom Share -->
+    <section class="feature-case">
+      <div class="feature-case-header">
+        <span class="case-id">02 · PARTAGE RÉSEAU LOCAL &amp; DROP CUBE FLOTTANT</span>
+        <span>Échange peer-to-peer zéro configuration sans serveur tiers</span>
       </div>
 
-      <div class="module-pane">
-        <span class="mod-index">MODULE 02 // TRANSFERT &amp; CHIFFREMENT</span>
-        <h3>Drop Cube, Portail QR Invité &amp; Boîte de Dépôt</h3>
-        <p>
-          Cube flottant sur le bureau permettant de partager des fichiers sur le réseau local par QR Code sans compression ZIP, ou d&apos;ouvrir une boîte de collecte inversée pour recevoir des fichiers depuis n&apos;importe quel navigateur mobile.
-        </p>
-        <ul class="spec-list">
-          <li><span>Contrôle d&apos;accès invité</span><span>Expiration horaire &amp; quota de téléchargements</span></li>
-          <li><span>Chiffrement de fichiers</span><span>Format .crypt (AES-256-GCM par mot de passe)</span></li>
-          <li><span>Traitement documentaire</span><span>Fusion/extraction PDF, purge EXIF, filigrane</span></li>
-        </ul>
-      </div>
+      <div class="feature-case-body reverse">
+        <div class="feature-visual">
+          <div class="terminal-card">
+            <div class="tc-head">
+              <span>SERVEUR HTTP LOCAL ÉPHÉMÈRE</span>
+              <span>PORT 5280 // LAN</span>
+            </div>
+            <div class="tc-body">
+              <span class="tc-muted">// Dépôt d'un fichier dans le Drop Cube :</span><br />
+              <span class="tc-white">Fichier glissé : </span><span class="tc-prompt">cours_architecture_systeme.pdf (18 Mo)</span><br /><br />
+              <span class="tc-keyword">[SERVEUR]</span> Micro-daemon HTTP actif sur 192.168.1.45:5280<br />
+              <span class="tc-keyword">[QR_CODE]</span> Généré dynamiquement en mémoire (matrice 33x33)<br />
+              <span class="tc-keyword">[SÉCURITÉ]</span> Métadonnées EXIF purgées · Expiration : 10 min<br />
+              <span class="tc-keyword">[MODE]</span> Reverse Drop Box : Dépôt autorisé pour 24 étudiants<br />
+              <span class="tc-white">[STATUT]</span> Prêt pour téléchargement direct sans zip.
+            </div>
+          </div>
+        </div>
 
-      <div class="module-pane">
-        <span class="mod-index">MODULE 03 // TÉLÉMÉTRIE MOBILE</span>
-        <h3>Contrôle Distant Wi-Fi / Bluetooth &amp; Presse-Papiers</h3>
-        <p>
-          Application compagnon Android native (APK) et portail web mobile : pavé tactile, clavier, retour vidéo de l&apos;écran PC en direct, Stream Deck personnalisable et synchronisation bidirectionnelle automatique du presse-papiers en arrière-plan.
-        </p>
-        <ul class="spec-list">
-          <li><span>Canaux de transport</span><span>HTTP LAN + Pont Bluetooth RFCOMM</span></li>
-          <li><span>Presse-papiers temps réel</span><span>Copie PC ↔ Mobile transparente hors focus</span></li>
-          <li><span>Transfert AirDrop local</span><span>Envoi direct PC vers smartphone et inversement</span></li>
-        </ul>
-      </div>
+        <div class="feature-narrative">
+          <div>
+            <h2 class="feature-title">
+              Partagez instantanément par QR Code sur le réseau local.
+            </h2>
+            <p class="feature-desc">
+              Envoyer un document lourd à un collègue dans la même pièce ou récupérer les devoirs d&apos;une classe entière ne devrait jamais nécessiter un compte cloud, une clé USB infectée ou l&apos;envoi d&apos;e-mails surchargés. Cryptinelhack intègre un serveur local éphémère haute performance.
+            </p>
 
-      <div class="module-pane">
-        <span class="mod-index">MODULE 04 // AUDIO &amp; AUTOMATISATION</span>
-        <h3>Mini-HUD Bureau, Mixeur WASAPI &amp; Workflows</h3>
-        <p>
-          Superposition de monitoring matériel (CPU, RAM, GPU, réseau), lecture du niveau de batterie des périphériques Bluetooth connectés et contrôle individuel du volume sonore de chaque application active.
-        </p>
-        <ul class="spec-list">
-          <li><span>Contrôle audio par logiciel</span><span>API Windows Core Audio / IAudioSessionManager2</span></li>
-          <li><span>Capture d&apos;écran &amp; OCR</span><span>Zone libre, flèches, floutage, extraction texte</span></li>
-          <li><span>Moteur de flux visuel</span><span>75 modèles, déclencheurs USB, Cron, Processus</span></li>
-        </ul>
+            <ul class="feature-tech-list">
+              <li class="feature-tech-item">
+                <span class="item-num">01</span>
+                <div>
+                  <strong>Drop Cube flottant toujours au premier plan :</strong>
+                  Une discrète zone transparente ancrée sur votre écran. Glissez-y n&apos;importe quel dossier ou fichier depuis votre bureau pour générer instantanément un lien de téléchargement local.
+                </div>
+              </li>
+              <li class="feature-tech-item">
+                <span class="item-num">02</span>
+                <div>
+                  <strong>Téléchargement direct via QR Code sur mobile :</strong>
+                  Le smartphone, la tablette ou l&apos;ordinateur cible scanne le QR code affiché à l&apos;écran et télécharge le fichier en pleine vitesse LAN sans passer par Internet ni créer d&apos;archive ZIP.
+                </div>
+              </li>
+              <li class="feature-tech-item">
+                <span class="item-num">03</span>
+                <div>
+                  <strong>Mode Reverse Drop Box (Collecte de devoirs &amp; projets) :</strong>
+                  Activez la boîte de dépôt inversée. Vos collaborateurs ou étudiants déposent leurs fichiers directement dans un répertoire dédié de votre PC depuis leur navigateur, sans avoir aucun accès à vos disques.
+                </div>
+              </li>
+              <li class="feature-tech-item">
+                <span class="item-num">04</span>
+                <div>
+                  <strong>Protection de la vie privée &amp; Outils PDF :</strong>
+                  Purge automatique des métadonnées (coordonnées GPS, appareil photo, identifiants) sur les photos avant partage. Module de fusion et réorganisation de documents PDF intégré.
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div class="feature-meta-chips">
+            <span class="chip">Protocole : <strong>HTTP/1.1 LAN Stream</strong></span>
+            <span class="chip">Cloud : <strong>0% Dépendance</strong></span>
+            <span class="chip">Expirations : <strong>Minuteur &amp; Compteur Max</strong></span>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- Section 02: Distribution Table -->
-    <div class="sec-bar" id="distributions">
-      <span>02 // Distribution des Binaires Officiels</span>
-      <span>Dépôt : github.com/cryptinelhack/CRYPTINELHACK</span>
-    </div>
-
-    <section class="dist-section">
-      <div class="dist-header">
-        <div>
-          <h2>Télécharger Cryptinelhack</h2>
-          <p>Les installateurs sont compilés en mode Release optimisé (LTO) et distribués via notre dépôt officiel de releases.</p>
-        </div>
-        <a href="https://github.com/cryptinelhack/CRYPTINELHACK/releases" target="_blank" rel="noopener" class="btn btn-outline">
-          Consulter l&apos;historique sur GitHub →
-        </a>
+    <!-- Feature 03: Remote Mobile Companion -->
+    <section class="feature-case">
+      <div class="feature-case-header">
+        <span class="case-id">03 · COMPAGNON MOBILE ANDROID &amp; STREAM DECK</span>
+        <span>Contrôle déporté sans latence via Wi-Fi et Bluetooth</span>
       </div>
 
-      <table class="dist-table">
+      <div class="feature-case-body">
+        <div class="feature-narrative">
+          <div>
+            <h2 class="feature-title">
+              Votre smartphone devient un trackpad, miroir d&apos;écran et Stream Deck.
+            </h2>
+            <p class="feature-desc">
+              Grâce à l&apos;application native Android Cryptinelhack Remote (fournie sous forme d&apos;APK autonome), pilotez votre station de travail Windows à distance avec une réactivité exceptionnelle.
+            </p>
+
+            <ul class="feature-tech-list">
+              <li class="feature-tech-item">
+                <span class="item-num">01</span>
+                <div>
+                  <strong>Trackpad virtuel multi-touch &amp; saisie clavier :</strong>
+                  Contrôlez le pointeur, effectuez des clics droits, des défilements à deux doigts et tapez du texte à distance avec un retour haptique fluide et zéro latence perceptible.
+                </div>
+              </li>
+              <li class="feature-tech-item">
+                <span class="item-num">02</span>
+                <div>
+                  <strong>Miroir d&apos;écran en temps réel (Screen Mirror) :</strong>
+                  Diffusez l&apos;affichage de votre écran Windows sur l&apos;écran de votre téléphone pour surveiller une compilation, un rendu 3D ou une opération système depuis une autre pièce.
+                </div>
+              </li>
+              <li class="feature-tech-item">
+                <span class="item-num">03</span>
+                <div>
+                  <strong>Stream Deck &amp; Pavé de macros tactiles :</strong>
+                  Déclenchez des raccourcis complexes, pilotez OBS, basculez de profil d&apos;application ou lancez vos workflows préférés d&apos;une simple pression sur votre mobile.
+                </div>
+              </li>
+              <li class="feature-tech-item">
+                <span class="item-num">04</span>
+                <div>
+                  <strong>Presse-papier synchronisé bidirectionnel :</strong>
+                  Copiez un texte, une clé ou une URL sur votre téléphone Android : elle est disponible instantanément dans le presse-papier Windows (Ctrl+V), et vice versa.
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div class="feature-meta-chips">
+            <span class="chip">Liaison : <strong>Wi-Fi Direct / Bluetooth BLE</strong></span>
+            <span class="chip">Plateforme : <strong>Android 8.0 à 15+</strong></span>
+            <span class="chip">Latence : <strong>&lt; 6 ms</strong></span>
+          </div>
+        </div>
+
+        <div class="feature-visual">
+          <div class="terminal-card">
+            <div class="tc-head">
+              <span>ANDROID COMPANION BRIDGE</span>
+              <span>ENCRYPTED UDP CHANNEL</span>
+            </div>
+            <div class="tc-body">
+              <span class="tc-muted">// Poignée de main cryptographique Wi-Fi :</span><br />
+              <span class="tc-keyword">[REMOTE]</span> Paired device : Pixel 8 Pro (ARM64)<br />
+              <span class="tc-keyword">[AUTH]</span> Ephemeral ECDH key exchanged successfully<br />
+              <span class="tc-keyword">[STREAM]</span> Screen mirror: 1920x1080 @ 30fps H.264 low-overhead<br />
+              <span class="tc-keyword">[CLIPBOARD]</span> Synchronized: "https://github.com/cryptinelhack"<br />
+              <span class="tc-white">[READY]</span> Virtual trackpad &amp; Stream Deck macros active.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature 04: Desktop Mini-HUD & WASAPI Audio Mixer -->
+    <section class="feature-case">
+      <div class="feature-case-header">
+        <span class="case-id">04 · TÉLÉMÉTRIE MATÉRIELLE &amp; MIXEUR WASAPI</span>
+        <span>Surveillance transparente des ressources et gestion audio granulaire</span>
+      </div>
+
+      <div class="feature-case-body reverse">
+        <div class="feature-visual">
+          <div class="terminal-card">
+            <div class="tc-head">
+              <span>WASAPI AUDIO SESSIONS &amp; HARDWARE SENSORS</span>
+              <span>SAMPLING 100MS</span>
+            </div>
+            <div class="tc-body">
+              <span class="tc-white">CPU : </span><span class="tc-keyword">1.8% (16 Cores, 4.4 GHz)</span><br />
+              <span class="tc-white">RAM : </span><span class="tc-keyword">5.2 Go / 32 Go (16%)</span><br />
+              <span class="tc-white">GPU : </span><span class="tc-keyword">42°C · 0.8 Go VRAM</span><br />
+              <span class="tc-white">RÉSEAU : </span><span class="tc-keyword">▼ 1.2 Mo/s &nbsp; ▲ 84 Ko/s</span><br /><br />
+              <span class="tc-muted">// Sessions audio actives (WASAPI Windows Core Audio) :</span><br />
+              <span class="tc-keyword">[01]</span> Spotify.exe &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[======----] 62%<br />
+              <span class="tc-keyword">[02]</span> Discord.exe &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[========--] 80%<br />
+              <span class="tc-keyword">[03]</span> Chrome.exe &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[MUTE] &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0%<br />
+              <span class="tc-white">[BT BATTERY]</span> Casque Sony WH-1000XM5 : 85%
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-narrative">
+          <div>
+            <h2 class="feature-title">
+              Contrôlez vos volumes et surveillez vos composants d&apos;un coup d&apos;œil.
+            </h2>
+            <p class="feature-desc">
+              Le panneau des paramètres de volume et le gestionnaire des tâches Windows sont lourds à ouvrir et envahissants. Cryptinelhack fournit un HUD compact et élégant, positionnable sur n&apos;importe quel écran.
+            </p>
+
+            <ul class="feature-tech-list">
+              <li class="feature-tech-item">
+                <span class="item-num">01</span>
+                <div>
+                  <strong>Mini-HUD de diagnostic en temps réel :</strong>
+                  Télémétrie discrète affichant la fréquence et charge CPU par cœur, l&apos;utilisation de la RAM physique et du cache, la température du GPU et les débits réseau I/O.
+                </div>
+              </li>
+              <li class="feature-tech-item">
+                <span class="item-num">02</span>
+                <div>
+                  <strong>Jauge de batterie des appareils Bluetooth :</strong>
+                  Affichage en temps réel du pourcentage de batterie de vos casques sans fil, écouteurs, manettes Xbox/PS5 et souris appairées, avec alertes configurables avant extinction.
+                </div>
+              </li>
+              <li class="feature-tech-item">
+                <span class="item-num">03</span>
+                <div>
+                  <strong>Mixeur audio WASAPI par processus :</strong>
+                  Ajustez individuellement le volume de votre navigateur, de votre jeu ou de votre logiciel de communication sans altérer le volume maître général.
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div class="feature-meta-chips">
+            <span class="chip">API : <strong>Windows WASAPI CoreAudio</strong></span>
+            <span class="chip">Fréquence : <strong>48 kHz Bitperfect</strong></span>
+            <span class="chip">Impact CPU : <strong>&lt; 0.2%</strong></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature 05: Spotlight Launcher & OCR Snipping -->
+    <section class="feature-case">
+      <div class="feature-case-header">
+        <span class="case-id">05 · SPOTLIGHT LAUNCHER &amp; CAPTURE D&apos;ÉCRAN OCR</span>
+        <span>Recherche instantanée et extraction de texte vectorielle</span>
+      </div>
+
+      <div class="feature-case-body">
+        <div class="feature-narrative">
+          <div>
+            <h2 class="feature-title">
+              Trouvez tout en une frappe de touche. Extrayez le texte de n&apos;importe où.
+            </h2>
+            <p class="feature-desc">
+              La palette de commandes universelle (Ctrl+K) accélère drastiquement vos flux de travail quotidiens, tandis que l&apos;outil de capture d&apos;écran intégré intègre des capacités d&apos;annotation et de transcription immédiate.
+            </p>
+
+            <ul class="feature-tech-list">
+              <li class="feature-tech-item">
+                <span class="item-num">01</span>
+                <div>
+                  <strong>Palette de commandes Spotlight (Ctrl+K) :</strong>
+                  Recherche instantanée pondérée parmi vos logiciels, fichiers récents, commandes système et raccourcis personnalisés avec navigation intégrale au clavier.
+                </div>
+              </li>
+              <li class="feature-tech-item">
+                <span class="item-num">02</span>
+                <div>
+                  <strong>Outil de capture contextuel (Snipping Tool) :</strong>
+                  Capturez une fenêtre, un écran ou une zone libre. Ajoutez des flèches d&apos;annotation, encadrés et numérotations didactiques sans recourir à un logiciel tiers lourd.
+                </div>
+              </li>
+              <li class="feature-tech-item">
+                <span class="item-num">03</span>
+                <div>
+                  <strong>Floutage de confidentialité (Caviardage immédiat) :</strong>
+                  Floutez les mots de passe, numéros de cartes ou visages avant tout partage ou sauvegarde en un seul mouvement de souris.
+                </div>
+              </li>
+              <li class="feature-tech-item">
+                <span class="item-num">04</span>
+                <div>
+                  <strong>Reconnaissance optique de caractères (OCR) intégrée :</strong>
+                  Extrayez instantanément le texte présent dans n&apos;importe quelle image ou vidéo capturée à l&apos;écran directement dans votre presse-papier au format texte brut.
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div class="feature-meta-chips">
+            <span class="chip">Raccourci : <strong>Ctrl + K Universel</strong></span>
+            <span class="chip">OCR : <strong>Reconnaissance locale sans cloud</strong></span>
+            <span class="chip">Format export : <strong>PNG / Presse-papier</strong></span>
+          </div>
+        </div>
+
+        <div class="feature-visual">
+          <div class="terminal-card">
+            <div class="tc-head">
+              <span>OCR TEXT ENGINE // CLIPBOARD INJECTION</span>
+              <span>LOCAL EMBEDDED TESSERACT</span>
+            </div>
+            <div class="tc-body">
+              <span class="tc-muted">// Zone d'écran capturée (380x120 px) :</span><br />
+              <span class="tc-keyword">[OCR DETECT]</span> Bounding boxes identified: 4 lines<br />
+              <span class="tc-keyword">[OCR RESULT]</span> "git clone https://github.com/cryptinelhack/CRYPTINELHACK"<br />
+              <span class="tc-keyword">[PRIVACY]</span> Masked 1 token pattern in visual buffer<br />
+              <span class="tc-white">[CLIPBOARD]</span> Texte copié automatiquement dans le presse-papier Windows.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature 06: AES-256 Vault & Workflow Studio -->
+    <section class="feature-case">
+      <div class="feature-case-header">
+        <span class="case-id">06 · CHIFFREMENT AES-256 &amp; STUDIO D&apos;AUTOMATISATION</span>
+        <span>Coffre-fort Windows DPAPI et 75 scénarios automatisés</span>
+      </div>
+
+      <div class="feature-case-body reverse">
+        <div class="feature-visual">
+          <div class="terminal-card">
+            <div class="tc-head">
+              <span>SECURITY VAULT &amp; WORKFLOW PIPELINE</span>
+              <span>MILITARY GRADE HARDENING</span>
+            </div>
+            <div class="tc-body">
+              <span class="tc-white">Algorithme : </span><span class="tc-keyword">AES-256-GCM / 96-bit Nonce</span><br />
+              <span class="tc-white">Dérivation de clé : </span><span class="tc-keyword">Argon2id (m=65536, t=3, p=4)</span><br />
+              <span class="tc-white">Stockage clé : </span><span class="tc-keyword">Windows DPAPI Scellé TPM</span><br /><br />
+              <span class="tc-muted">// Automatisation active (Workflow Studio) :</span><br />
+              <span class="tc-keyword">[TRIGGER]</span> Insertion clé USB de sécurité (VID_0781 / PID_5583)<br />
+              <span class="tc-keyword">[ACTION 1]</span> Déchiffrement sécurisé du conteneur .crypt en RAM<br />
+              <span class="tc-keyword">[ACTION 2]</span> Synchronisation miroir vers dossier local chiffré<br />
+              <span class="tc-white">[ACTION 3]</span> Envoi notification de télémétrie vers compagnon Android
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-narrative">
+          <div>
+            <h2 class="feature-title">
+              Vos secrets verrouillés par AES-256. Vos routines automatisées.
+            </h2>
+            <p class="feature-desc">
+              Protégez vos fichiers les plus sensibles avec un chiffrement authentifié inviolable, et automatisez les tâches répétitives sans écrire une ligne de code complexe grâce à notre studio visuel.
+            </p>
+
+            <ul class="feature-tech-list">
+              <li class="feature-tech-item">
+                <span class="item-num">01</span>
+                <div>
+                  <strong>Chiffrement symétrique de fichiers (.crypt) :</strong>
+                  Chiffrement de niveau militaire AES-256-GCM avec dérivation de clé Argon2id. Vos documents protégés ne peuvent être lus sans le mot de passe maître ou la clé matérielle.
+                </div>
+              </li>
+              <li class="feature-tech-item">
+                <span class="item-num">02</span>
+                <div>
+                  <strong>Coffre-fort de mots de passe scellé par DPAPI :</strong>
+                  Stockez vos identifiants, tokens de développement et secrets système sous la protection directe du module matériel TPM de votre carte mère.
+                </div>
+              </li>
+              <li class="feature-tech-item">
+                <span class="item-num">03</span>
+                <div>
+                  <strong>Visual Workflow Studio (75 modèles prêts à l&apos;emploi) :</strong>
+                  Créez des pipelines d&apos;actions personnalisés : tri automatique de dossiers de téléchargement, conversion par lot, archivage nocturne et notifications.
+                </div>
+              </li>
+              <li class="feature-tech-item">
+                <span class="item-num">04</span>
+                <div>
+                  <strong>Déclencheurs matériels et événements système :</strong>
+                  Déclenchez des flux lors du branchement d&apos;un disque USB précis, sur planification horaire (Cron), ou lors de la modification d&apos;un répertoire surveillé.
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div class="feature-meta-chips">
+            <span class="chip">Sécurité : <strong>Argon2id + AES-256-GCM</strong></span>
+            <span class="chip">Matériel : <strong>Windows TPM / DPAPI</strong></span>
+            <span class="chip">Modèles : <strong>75 Workflows inclus</strong></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Technical Comparison Table -->
+    <section class="comp-section" id="comparatif">
+      <div class="comp-header">
+        <h2>Rigueur technique : Cryptinelhack face aux alternatives</h2>
+        <p>Pourquoi une conception native en Rust surpasse l&apos;explorateur Windows et les applications électroniques lentes.</p>
+      </div>
+
+      <table class="comp-table">
         <thead>
           <tr>
-            <th>Package</th>
-            <th>Plateforme</th>
-            <th>Architecture</th>
-            <th>Format</th>
-            <th style="text-align:right;">Action</th>
+            <th>Critère technique</th>
+            <th class="brand-col">Cryptinelhack</th>
+            <th>Explorateur Windows 11</th>
+            <th>Utilitaires Web / Electron</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td><strong id="tableExeName">Cryptinelhack Setup (Recommandé)</strong></td>
-            <td>Windows 10 / Windows 11</td>
-            <td><span class="arch-badge">x86_64</span></td>
-            <td><span class="arch-badge">NSIS .exe</span></td>
-            <td style="text-align:right;">
-              <a id="tableDownloadExeBtn" href="https://github.com/cryptinelhack/CRYPTINELHACK/releases/latest" target="_blank" rel="noopener" class="btn btn-primary">
-                Télécharger .exe
-              </a>
-            </td>
+            <td>Langage &amp; Runtime</td>
+            <td class="brand-col"><strong>Rust 1.80+ (Code machine natif)</strong></td>
+            <td>C++ / XAML / WinUI hybride</td>
+            <td>JavaScript / Chromium (Lourd)</td>
           </tr>
           <tr>
-            <td><strong>Cryptinelhack Windows Installer</strong></td>
-            <td>Windows 10 / Windows 11 (Déploiement MSI)</td>
-            <td><span class="arch-badge">x86_64</span></td>
-            <td><span class="arch-badge">WiX .msi</span></td>
-            <td style="text-align:right;">
-              <a href="https://github.com/cryptinelhack/CRYPTINELHACK/releases/latest" target="_blank" rel="noopener" class="btn btn-outline">
-                Télécharger .msi
-              </a>
-            </td>
+            <td>Empreinte RAM au repos</td>
+            <td class="brand-col"><strong>~38 Mo</strong></td>
+            <td>180 Mo - 450 Mo</td>
+            <td>350 Mo - 900 Mo</td>
           </tr>
           <tr>
-            <td><strong>Cryptinelhack Remote Companion</strong></td>
-            <td>Android 8.0+ (Wi-Fi &amp; Bluetooth)</td>
-            <td><span class="arch-badge">ARM64 / Universel</span></td>
-            <td><span class="arch-badge">Signé .apk</span></td>
-            <td style="text-align:right;">
-              <a href="https://github.com/cryptinelhack/CRYPTINELHACK/releases/latest" target="_blank" rel="noopener" class="btn btn-outline">
-                Télécharger .apk
-              </a>
-            </td>
+            <td>Temps de démarrage à froid</td>
+            <td class="brand-col"><strong>&lt; 140 ms</strong></td>
+            <td>850 ms - 2 400 ms</td>
+            <td>1 800 ms - 4 000 ms</td>
+          </tr>
+          <tr>
+            <td>Double Volet (Dual-Pane) natif</td>
+            <td class="brand-col"><span class="comp-check">OUI (Accéléré GPU)</span></td>
+            <td><span class="comp-cross">NON (Onglets isolés)</span></td>
+            <td><span class="comp-cross">Partiel (Latent)</span></td>
+          </tr>
+          <tr>
+            <td>Dédoublonnage SHA-256 bit-à-bit</td>
+            <td class="brand-col"><span class="comp-check">OUI (Multi-threadé)</span></td>
+            <td><span class="comp-cross">NON</span></td>
+            <td><span class="comp-cross">NON</span></td>
+          </tr>
+          <tr>
+            <td>Partage LAN direct par QR Code</td>
+            <td class="brand-col"><span class="comp-check">OUI (Drop Cube &amp; Reverse)</span></td>
+            <td><span class="comp-cross">NON (Partage réseau SMB complexe)</span></td>
+            <td><span class="comp-cross">Nécessite compte Cloud</span></td>
+          </tr>
+          <tr>
+            <td>Compagnon mobile Android (Trackpad &amp; Mirror)</td>
+            <td class="brand-col"><span class="comp-check">OUI (Inclus via APK)</span></td>
+            <td><span class="comp-cross">NON</span></td>
+            <td><span class="comp-cross">Abonnement tiers</span></td>
+          </tr>
+          <tr>
+            <td>Télémétrie WASAPI &amp; Mixeur granulaire</td>
+            <td class="brand-col"><span class="comp-check">OUI (Mini-HUD flottant)</span></td>
+            <td><span class="comp-cross">Panneau enfoui</span></td>
+            <td><span class="comp-cross">NON</span></td>
+          </tr>
+          <tr>
+            <td>Chiffrement de fichiers client-side</td>
+            <td class="brand-col"><span class="comp-check">AES-256-GCM + DPAPI</span></td>
+            <td><span class="comp-cross">BitLocker (Partition globale)</span></td>
+            <td><span class="comp-cross">NON</span></td>
           </tr>
         </tbody>
       </table>
     </section>
 
-    <!-- Section 03: License Provisioning -->
-    <div class="sec-bar" id="licence">
-      <span>03 // Enregistrement &amp; Clé d&apos;Activation Matérielle</span>
-      <span>Licence individuelle à usage unique</span>
-    </div>
+    <!-- Download Packages Section -->
+    <section class="dl-section" id="telechargement">
+      <div class="dl-header-bar">
+        <span>TÉLÉCHARGEMENT DIRECT // CANAL OFFICIEL GITHUB</span>
+        <span>Version actuelle : v0.1.0-stable</span>
+      </div>
 
-    <section class="license-grid">
-      <div class="license-info">
-        <div>
-          <h2>Obtenir une clé d&apos;accès</h2>
-          <p>
-            Chaque installation de Cryptinelhack est protégée par une clé d&apos;activation individuelle à usage unique. Lors de la première validation sur votre poste, la clé est associée à votre empreinte matérielle (HWID) et désactivée pour toute réutilisation.
-          </p>
-
-          <div class="protocol-steps">
-            <div class="protocol-step">
-              <span class="step-num">01</span>
-              <span>Téléchargez et installez Cryptinelhack sur votre poste Windows.</span>
+      <div class="dl-grid">
+        <div class="dl-card highlight">
+          <div>
+            <div class="dl-card-tag">
+              <span>Recommandé pour Windows</span>
+              <span class="mono" style="color:var(--ok);">v0.1.0</span>
             </div>
-            <div class="protocol-step">
-              <span class="step-num">02</span>
-              <span>Transmettez votre nom et votre adresse e-mail via ce formulaire (ou directement depuis l&apos;écran d&apos;accueil du logiciel).</span>
-            </div>
-            <div class="protocol-step">
-              <span class="step-num">03</span>
-              <span>Vous recevez votre clé unique <code>CRYP-XXXX-XXXX-XXXX</code> par e-mail.</span>
+            <h3 id="tableExeName">Cryptinelhack Setup (.exe)</h3>
+            <p>
+              Installateur officiel autonome NSIS 64-bit pour Windows 10 et Windows 11. Inclut toutes les fonctionnalités, le moteur Rust et les pilotes d&apos;intégration système.
+            </p>
+            <div class="dl-card-specs">
+              <span>Architecture : <strong>x86_64 (Intel &amp; AMD)</strong></span>
+              <span>Intégrité : <strong>Signature SHA-256 officielle</strong></span>
+              <span>Poids binaire : <strong>~36 Mo</strong></span>
             </div>
           </div>
+          <a id="tableDownloadExeBtn" href="https://github.com/cryptinelhack/CRYPTINELHACK/releases/latest" target="_blank" rel="noopener" class="btn btn-accent btn-lg" style="width:100%;">
+            Télécharger l&apos;installateur .exe
+          </a>
         </div>
 
-        <div class="contact-box">
-          <span>Contact &amp; Support Licences : <code>cryptinelhack@gmail.com</code></span>
-          <a href="mailto:cryptinelhack@gmail.com?subject=Demande%20de%20licence%20Cryptinelhack" style="color:var(--brand);font-weight:600;">
-            Écrire un e-mail →
+        <div class="dl-card">
+          <div>
+            <div class="dl-card-tag">
+              <span>Déploiement Entreprise</span>
+              <span class="mono">MSI</span>
+            </div>
+            <h3>Paquet Windows Installer (.msi)</h3>
+            <p>
+              Idéal pour les administrateurs système et les déploiements silencieux en parc informatique via Active Directory ou GPO.
+            </p>
+            <div class="dl-card-specs">
+              <span>Architecture : <strong>x86_64</strong></span>
+              <span>Mode silencieux : <strong>/quiet /norestart supporté</strong></span>
+              <span>Format : <strong>WiX Toolset natif</strong></span>
+            </div>
+          </div>
+          <a href="https://github.com/cryptinelhack/CRYPTINELHACK/releases/latest" target="_blank" rel="noopener" class="btn btn-outline btn-lg" style="width:100%;">
+            Télécharger le paquet .msi
+          </a>
+        </div>
+
+        <div class="dl-card">
+          <div>
+            <div class="dl-card-tag">
+              <span>Compagnon Mobile</span>
+              <span class="mono">Android APK</span>
+            </div>
+            <h3>Cryptinelhack Remote (.apk)</h3>
+            <p>
+              Application mobile compagnon pour piloter le trackpad virtuel, le miroir d&apos;écran, le Stream Deck tactile et le presse-papier partagé.
+            </p>
+            <div class="dl-card-specs">
+              <span>Compatibilité : <strong>Android 8.0 à 15+</strong></span>
+              <span>Architecture : <strong>ARM64 / ARMv7 universel</strong></span>
+              <span>Protocole : <strong>Wi-Fi Direct &amp; Bluetooth BLE</strong></span>
+            </div>
+          </div>
+          <a href="https://github.com/cryptinelhack/CRYPTINELHACK/releases/latest" target="_blank" rel="noopener" class="btn btn-outline btn-lg" style="width:100%;">
+            Télécharger l&apos;application .apk
           </a>
         </div>
       </div>
+    </section>
 
-      <div class="license-form-pane">
-        <form id="publicRequestForm">
-          <div class="field">
-            <label for="reqClientName">Nom complet du titulaire *</label>
-            <input type="text" id="reqClientName" placeholder="Nom et prénom" required />
+    <!-- License & HWID Provisioning Section -->
+    <section class="license-section" id="licence">
+      <div class="license-grid">
+        <div class="license-info-pane">
+          <div>
+            <span class="tag-editorial" style="margin-bottom:16px;display:inline-block;">SÉCURITÉ DU PROTOCOLE</span>
+            <h2>Demande de clé d&apos;accès individuelle</h2>
+            <p>
+              Chaque installation de Cryptinelhack est sécurisée par une clé d&apos;activation unique scellée à l&apos;empreinte matérielle de votre poste (HWID). Aucun intermédiaire cloud, aucune fuite de données : la clé est vérifiée directement et validée pour votre usage exclusif.
+            </p>
+
+            <div class="steps-editorial">
+              <div class="step-editorial-item">
+                <span class="step-index">01</span>
+                <div class="step-text">
+                  <h4>Téléchargement &amp; Installation</h4>
+                  <p>Installez l&apos;application sur votre poste Windows depuis le bouton de téléchargement officiel ci-dessus.</p>
+                </div>
+              </div>
+
+              <div class="step-editorial-item">
+                <span class="step-index">02</span>
+                <div class="step-text">
+                  <h4>Transmission de vos coordonnées</h4>
+                  <p>Renseignez votre nom et votre adresse e-mail dans le formulaire ci-contre (ou directement depuis l&apos;écran de verrouillage du logiciel).</p>
+                </div>
+              </div>
+
+              <div class="step-editorial-item">
+                <span class="step-index">03</span>
+                <div class="step-text">
+                  <h4>Génération &amp; Réception de votre clé</h4>
+                  <p>Votre clé d&apos;accès au format <code>CRYP-XXXX-XXXX-XXXX</code> est générée manuellement et vous est expédiée directement par e-mail.</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="field">
-            <label for="reqClientEmail">Adresse e-mail de réception *</label>
-            <input type="email" id="reqClientEmail" placeholder="nom@domaine.com" required />
+
+          <div class="contact-card-minimal">
+            <span>Contact &amp; Assistance : <strong>cryptinelhack@gmail.com</strong></span>
+            <a href="mailto:cryptinelhack@gmail.com?subject=Demande%20de%20cle%20Cryptinelhack">
+              Envoyer un message →
+            </a>
           </div>
-          <div class="field">
-            <label for="reqClientMsg">Identifiant matériel HWID ou note (Optionnel)</label>
-            <input type="text" id="reqClientMsg" placeholder="HWID-XXXX-XXXX-XXXX-XXXX" />
-          </div>
-          <button type="submit" class="btn btn-primary btn-lg" style="width:100%;justify-content:center;">
-            Transmettre ma demande de clé
-          </button>
-        </form>
-        <div class="status-msg" id="reqToast"></div>
+        </div>
+
+        <div class="license-form-pane">
+          <form id="publicRequestForm">
+            <div class="form-group">
+              <label for="reqClientName">Nom complet ou organisation *</label>
+              <input type="text" id="reqClientName" placeholder="Ex: Jean Dupont" required />
+            </div>
+
+            <div class="form-group">
+              <label for="reqClientEmail">Adresse e-mail de réception *</label>
+              <input type="email" id="reqClientEmail" placeholder="nom@domaine.com" required />
+            </div>
+
+            <div class="form-group">
+              <label for="reqClientMsg">Identifiant matériel HWID ou note d&apos;usage (Optionnel)</label>
+              <input type="text" id="reqClientMsg" placeholder="HWID-XXXX-XXXX-XXXX-XXXX ou motif d'utilisation" />
+            </div>
+
+            <button type="submit" class="btn btn-solid btn-lg" style="width:100%;justify-content:center;">
+              Transmettre ma demande d&apos;accès
+            </button>
+          </form>
+
+          <div class="status-toast" id="reqToast"></div>
+        </div>
       </div>
     </section>
 
+    <!-- Footer -->
     <footer class="site-footer">
-      <span>CRYPTINELHACK — SYSTÈME D&apos;AUTOMATISATION &amp; EXPLORATEUR WINDOWS</span>
-      <span>CONTACT : cryptinelhack@gmail.com</span>
+      <div class="footer-top">
+        <div class="footer-brand">
+          <img src="/cryptinelhack-logo.svg" alt="Cryptinelhack" width="22" height="22" style="border-radius:4px;" />
+          <span>Cryptinelhack System Engineering</span>
+        </div>
+        <div class="footer-links">
+          <a href="https://github.com/cryptinelhack/CRYPTINELHACK" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/cryptinelhack/CRYPTINELHACK/releases" target="_blank" rel="noopener">Releases</a>
+          <a href="mailto:cryptinelhack@gmail.com">cryptinelhack@gmail.com</a>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© 2026 CRYPTINELHACK. TOUS DROITS RÉSERVÉS.</span>
+        <span>CONÇU POUR WINDOWS 10 / 11 · COMPAGNONS ANDROID &amp; WASAPI</span>
+      </div>
     </footer>
+
   </main>
 
   <script type="module">
@@ -884,65 +1931,75 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    async function loadLatestReleaseForDownloadButton() {
+    // Sync latest release download URLs dynamically
+    async function loadLatestRelease() {
       try {
         const snap = await getDoc(doc(db, "cryptinel_releases", "latest"));
         if (snap.exists()) {
           const data = snap.data();
           if (data.download_url) {
-            document.getElementById("mainDownloadExeBtn").href = data.download_url;
-            document.getElementById("navDownloadBtn").href = data.download_url;
-            document.getElementById("tableDownloadExeBtn").href = data.download_url;
+            const dlExe = data.download_url;
+            const mainBtn = document.getElementById("mainDownloadExeBtn");
+            const navBtn = document.getElementById("navDownloadBtn");
+            const tableBtn = document.getElementById("tableDownloadExeBtn");
+            if (mainBtn) mainBtn.href = dlExe;
+            if (navBtn) navBtn.href = dlExe;
+            if (tableBtn) tableBtn.href = dlExe;
           }
           if (data.version) {
-            document.getElementById("navVerBadge").textContent = `v${data.version}-x64`;
-            document.getElementById("mainDownloadLabel").textContent =
-              `Télécharger Cryptinelhack v${data.version} (.exe)`;
-            document.getElementById("tableExeName").textContent =
-              `Cryptinelhack v${data.version} Setup (Recommandé)`;
+            const navVer = document.getElementById("navVerBadge");
+            const mainLbl = document.getElementById("mainDownloadLabel");
+            const tableExe = document.getElementById("tableExeName");
+            if (navVer) navVer.textContent = `v${data.version}-x64`;
+            if (mainLbl) mainLbl.textContent = `Télécharger Cryptinelhack v${data.version} (.exe)`;
+            if (tableExe) tableExe.textContent = `Cryptinelhack v${data.version} Setup (.exe)`;
           }
         }
       } catch (_) {}
     }
-    loadLatestReleaseForDownloadButton();
+    loadLatestRelease();
 
-    document.getElementById("publicRequestForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const toast = document.getElementById("reqToast");
-      toast.className = "status-msg";
-      toast.style.display = "none";
+    // Client License Request Submission
+    const form = document.getElementById("publicRequestForm");
+    if (form) {
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const toast = document.getElementById("reqToast");
+        toast.className = "status-toast";
+        toast.style.display = "none";
 
-      const name = document.getElementById("reqClientName").value.trim();
-      const email = document.getElementById("reqClientEmail").value.trim();
-      const msg = document.getElementById("reqClientMsg").value.trim();
-      const ts = Math.floor(Date.now() / 1000);
-      const reqId = `REQ-${ts}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+        const name = document.getElementById("reqClientName").value.trim();
+        const email = document.getElementById("reqClientEmail").value.trim();
+        const msg = document.getElementById("reqClientMsg").value.trim();
+        const ts = Math.floor(Date.now() / 1000);
+        const reqId = `REQ-${ts}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
-      try {
-        await setDoc(doc(db, "cryptinel_requests", reqId), {
-          id: reqId,
-          client_name: name,
-          client_email: email,
-          client_message: msg,
-          machine_hwid: "",
-          machine_name: "Site Officiel",
-          status: "pending",
-          created_at: ts,
-          assigned_key: ""
-        });
-        toast.className = "status-msg ok";
-        toast.textContent =
-          "Demande enregistrée. Votre clé d'activation unique vous sera envoyée par e-mail depuis cryptinelhack@gmail.com.";
-        toast.style.display = "block";
-        document.getElementById("reqClientName").value = "";
-        document.getElementById("reqClientEmail").value = "";
-        document.getElementById("reqClientMsg").value = "";
-      } catch (err) {
-        toast.className = "status-msg err";
-        toast.textContent = "Erreur lors de la transmission : " + err.message;
-        toast.style.display = "block";
-      }
-    });
+        try {
+          await setDoc(doc(db, "cryptinel_requests", reqId), {
+            id: reqId,
+            client_name: name,
+            client_email: email,
+            client_message: msg,
+            machine_hwid: "",
+            machine_name: "Site Officiel",
+            status: "pending",
+            created_at: ts,
+            assigned_key: ""
+          });
+
+          toast.className = "status-toast ok";
+          toast.textContent = "Demande enregistrée avec succès. Votre clé individuelle vous sera expédiée par e-mail depuis cryptinelhack@gmail.com.";
+          toast.style.display = "block";
+          document.getElementById("reqClientName").value = "";
+          document.getElementById("reqClientEmail").value = "";
+          document.getElementById("reqClientMsg").value = "";
+        } catch (err) {
+          toast.className = "status-toast err";
+          toast.textContent = "Erreur lors de la transmission : " + err.message;
+          toast.style.display = "block";
+        }
+      });
+    }
   </script>
 </body>
 </html>
